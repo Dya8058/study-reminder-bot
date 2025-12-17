@@ -1,52 +1,23 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+import os
 from telegram import Update
-from apscheduler.schedulers.background import BackgroundScheduler
-import datetime, os
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = os.environ.get("BOT_TOKEN")
-
-scheduler = BackgroundScheduler()
-scheduler.start()
+TOKEN = os.getenv("BOT_TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 Welcome to StudyReminderBot 📚\n\n"
-        "Reminder set karne ke liye:\n"
-        "/remind 18:30 Maths Revision"
+        "👋 Hello!\n\n"
+        "📚 StudyReminderBot live ho gaya hai!\n"
+        "Ab reminders kaam karenge 🔔"
     )
 
-async def remind(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        time = context.args[0]
-        text = " ".join(context.args[1:])
+def main():
+    app = ApplicationBuilder().token(TOKEN).build()
 
-        hour, minute = map(int, time.split(":"))
-        now = datetime.datetime.now()
-        run_time = now.replace(hour=hour, minute=minute, second=0)
+    app.add_handler(CommandHandler("start", start))
 
-        scheduler.add_job(
-            send_reminder,
-            "date",
-            run_date=run_time,
-            args=[update.effective_chat.id, text]
-        )
+    print("🤖 Bot is running...")
+    app.run_polling()
 
-        await update.message.reply_text(
-            f"✅ Reminder set!\n⏰ {time}\n📘 {text}"
-        )
-    except:
-        await update.message.reply_text(
-            "❌ Galat format\nUse:\n/remind 18:30 Maths"
-        )
-
-async def send_reminder(chat_id, text):
-    await app.bot.send_message(
-        chat_id=chat_id,
-        text=f"⏰ Reminder!\n📚 {text}"
-    )
-
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("remind", remind))
-
-app.run_polling()
+if __name__ == "__main__":
+    main()
